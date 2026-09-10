@@ -1,0 +1,17 @@
+# netlify.toml
+
+# Points to your frontend's build output
+[build]
+  publish = "client/dist"  # Adjust if your build path is different
+  functions = "netlify/functions"
+
+# Defines how your functions are built
+[functions]
+  node_bundler = "esbuild"
+
+# Routes all requests from /api to your serverless function
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true

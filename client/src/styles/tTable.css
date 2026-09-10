@@ -1,0 +1,45 @@
+.tTable {
+	background      : #fff;
+	border-collapse : collapse;
+	border-spacing  : 0;
+	width           : 100%;
+}
+
+.tTable tr.table-head {
+	font-weight : 600;
+	background  : rgba(0, 0, 0, .05) !important;
+}
+
+.tTable tr:nth-child(2n+1) {
+	background : rgba(0, 0, 0, .03);
+}
+
+.tTable tr:hover,
+.table-col-hover {
+	background : #e5e5e5 !important;
+}
+
+.tTable td {
+	border   : 1px #ccc solid;
+	padding  : 3px 10px;
+	height   : 24px;
+	position : relative;
+}
+
+.tTable td.tTable-description {
+	max-width  : 280px;
+	word-break : break-word;
+}
+
+.table-pager {
+	display    : block;
+	height     : 30px;
+	overflow   : hidden;
+	background : rgba(0, 0, 0, .1);
+}
+
+.table-search-input {
+	width   : 200px;
+	padding : 3px 10px;
+	font-size: 13px;
+}

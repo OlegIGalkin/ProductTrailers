@@ -1,0 +1,193 @@
+// --------------------------------------------------------------------------
+// Default Theme Variables
+// --------------------------------------------------------------------------
+
+$sharetastic-font-size: 13px !default
+$sharetastic-font-color: #ccc !default
+$sharetastic-font: sans-serif !default
+$sharetastic-text-transform: capitalize !default
+
+$sharetastic-alignment: center !default
+$sharetastic-gutter: 4px !default
+$sharetastic-size: 32px !default
+$sharetastic-padding: 5px 10px !default
+$sharetastic-icon-margin: 0px !default
+$sharetastic-border-radius: 50% !default
+$sharetastic-icon-fill: #fff !default
+
+$sharetastic-facebook: #3a5795 !default
+$sharetastic-facebook-hover: darken($sharetastic-facebook, 10%) !default
+$sharetastic-instagram: #e1306c !default
+$sharetastic-instagram-hover: darken($sharetastic-instagram, 10%) !default
+$sharetastic-twitter: #1da1f2 !default
+$sharetastic-twitter-hover: darken($sharetastic-twitter, 10%) !default
+$sharetastic-pinterest: #bd081c !default
+$sharetastic-pinterest-hover: darken($sharetastic-pinterest, 10%) !default
+$sharetastic-linkedin: #0077b5 !default
+$sharetastic-linkedin-hover: darken($sharetastic-linkedin, 10%) !default
+$sharetastic-googleplus: #c53929 !default
+$sharetastic-googleplus-hover: darken($sharetastic-googleplus, 10%) !default
+$sharetastic-tumblr: #35465c !default
+$sharetastic-tumblr-hover: darken($sharetastic-tumblr, 10%) !default
+$sharetastic-flickr: #ff0084 !default
+$sharetastic-flickr-hover: darken($sharetastic-flickr, 10%) !default
+$sharetastic-email: #b8213b !default
+$sharetastic-email-hover: darken($sharetastic-email, 10%) !default
+$sharetastic-whatsapp: #25D366 !default
+$sharetastic-whatsapp-hover: darken($sharetastic-whatsapp, 10%) !default
+$sharetastic-print: #0058a1 !default
+$sharetastic-print-hover: darken($sharetastic-print, 10%) !default
+
+
+$services: ((facebook, $sharetastic-facebook, $sharetastic-facebook-hover),(twitter, $sharetastic-twitter, $sharetastic-twitter-hover),(googleplus, $sharetastic-googleplus, $sharetastic-googleplus-hover),(linkedin, $sharetastic-linkedin, $sharetastic-linkedin-hover),(pinterest, $sharetastic-pinterest, $sharetastic-pinterest-hover),(tumblr, $sharetastic-tumblr, $sharetastic-tumblr-hover),(flickr, $sharetastic-flickr, $sharetastic-flickr-hover),(instagram, $sharetastic-instagram, $sharetastic-instagram-hover),(email, $sharetastic-email, $sharetastic-email-hover),(whatsapp, $sharetastic-whatsapp, $sharetastic-whatsapp-hover),(print, $sharetastic-print, $sharetastic-print-hover))
+
+
+// --------------------------------------------------------------------------
+// Default Theme
+// --------------------------------------------------------------------------
+
+.sharetastic
+  color: $sharetastic-font-color
+  font-family: $sharetastic-font
+  font-size: $sharetastic-font-size
+  text-align: center
+  text-transform: $sharetastic-text-transform
+  display: -webkit-box
+  display: -ms-flexbox
+  display: -webkit-flex
+  display: flex
+  -webkit-flex-wrap: webkit-wrap
+  -moz-flex-wrap: moz-wrap
+  -ms-flex-wrap: ms-wrap
+  -o-flex-wrap: o-wrap
+  flex-wrap: wrap
+  -webkit-justify-content: $sharetastic-alignment
+  -moz-justify-content: $sharetastic-alignment
+  -ms-justify-content: $sharetastic-alignment
+  -o-justify-content: $sharetastic-alignment
+  justify-content: $sharetastic-alignment
+
+  &__sprite
+    display: none
+
+  &__button
+    border-radius: $sharetastic-border-radius
+    cursor: pointer
+    display: block
+    height: $sharetastic-size
+    margin: $sharetastic-gutter/2
+    overflow: hidden
+    position: relative
+    text-indent: 100%
+    transition: background-color 0.3s, color 0.3s
+    vertical-align: middle
+    width: $sharetastic-size
+    white-space: nowrap
+
+    @each $service in $services
+      &--#{nth($service, 1)}
+        background-color: nth($service, 2)
+        &:hover
+          background-color: nth($service, 3)
+
+  &__icon
+    fill: $sharetastic-icon-fill
+    height: auto
+    left: 50%
+    position: absolute
+    top: 50%
+    width: 100%
+    -webkit-transform: translate(-50%, -50%)
+    -ms-transform: translate(-50%, -50%)
+    -o-transform: translate(-50%, -50%)
+    transform: translate(-50%, -50%)
+
+
+  // ------------------------------------------------------------------------
+  // Simple Theme
+  // ------------------------------------------------------------------------
+
+  &--simple &,
+  &--simple.sharetastic--reversed &
+
+    &__icon
+      transition: fill 0.3s
+
+    &__button
+      background-color: transparent !important
+      border-radius: 0
+
+      @each $service in $services
+        &--#{nth($service, 1)}
+          .sharetastic__icon
+            fill: nth($service, 2)
+          &:hover .sharetastic__icon
+            fill: nth($service, 3)
+
+
+  // ------------------------------------------------------------------------
+  // Reversed Theme
+  // ------------------------------------------------------------------------
+
+  &--reversed &,
+  &--reversed.sharetastic--text &
+
+    &__icon
+      transition: fill 0.3s
+
+    &__button
+      background-color: #fff
+      &:hover
+        color: #fff
+
+      @each $service in $services
+        &--#{nth($service, 1)}
+          color: nth($service, 2)
+          .sharetastic__icon
+            fill: nth($service, 2)
+          &:hover
+            background-color: nth($service, 2)
+            .sharetastic__icon
+              fill: #fff
+
+
+  // ------------------------------------------------------------------------
+  // Text Theme
+  // ------------------------------------------------------------------------
+
+  &--text &
+
+    &__button
+      border-radius: $sharetastic-border-radius
+      color: #fff
+      height: auto
+      padding: $sharetastic-padding
+      text-decoration: none
+      text-indent: 0
+      width: auto
+      white-space: normal
+      -ms-align-items: center
+      align-items: center
+      display: -webkit-box
+      display: -ms-flexbox
+      display: -webkit-flex
+      display: flex
+
+    &__icon
+      margin-right: $sharetastic-icon-margin
+      position: static
+      width: auto
+      -webkit-transform: none
+      -ms-transform: none
+      -o-transform: none
+      transform: none
+
+  &--text
+    &.sharetastic--simple
+      .sharetastic__button
+
+        @each $service in $services
+          &--#{nth($service, 1)}
+            color: nth($service, 2)
+            &:hover
+              color: nth($service, 3)
