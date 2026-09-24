@@ -149,7 +149,8 @@ export default function PlaylistTable({
         />
         <div>
           <span style={{ backgroundColor: '#e6f7ff', padding: '2px 6px' }}>Blue bg</span> watching &nbsp;
-          <span style={{ backgroundColor: '#f5f5f5', padding: '2px 6px' }}>Gray bg</span> watched
+          <span style={{ backgroundColor: '#f5f5f5', padding: '2px 6px' }}>Gray bg</span> watched &nbsp;
+          Total: {filteredRows.length}
         </div>
       </div>
 
