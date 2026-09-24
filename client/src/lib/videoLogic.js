@@ -312,19 +312,22 @@ export function countTodayVideos(allVideos) {
 
 export function getDateFilterFromUrl() {
   const params = getURLParameters();
-  const mode = params['dateMode'] || 'week';
-  const dateStr = params['dateValue'];
-  let selectedDate = null;
-  if (mode === 'pick' && dateStr) {
-    // Parse the date string as a date in America/Los_Angeles (midnight LA time)
-    const laMoment = moment.tz(dateStr, 'America/Los_Angeles');
-    if (laMoment.isValid()) {
-      selectedDate = laMoment.toDate(); // converts to JS Date (UTC-based)
-    } else {
-      selectedDate = new Date(dateStr);
-    }
-  }
-  return { mode, selectedDate };
+  const requestedMode = params['dateMode'] || 'week';
+  const mode = ['week', 'today', 'yesterday', 'range'].includes(requestedMode)
+    ? requestedMode
+    : 'week';
+  const parseDate = (dateValue) => {
+    if (!dateValue) return null;
+    const laMoment = moment.tz(dateValue, 'YYYY-MM-DD', true, 'America/Los_Angeles');
+    return laMoment.isValid() ? laMoment.toDate() : null;
+  };
+  return {
+    mode,
+    selectedDateRange: {
+      startDate: mode === 'range' ? parseDate(params['dateStart']) : null,
+      endDate: mode === 'range' ? parseDate(params['dateEnd']) : null,
+    },
+  };
 }
 
 export function createLADateInstance(dateValue) {
@@ -335,20 +338,25 @@ export function createLADateInstance(dateValue) {
   return new Date(dateValue)
 }
 
-export function updateDateFilterInUrl(mode, selectedDate) {
+export function updateDateFilterInUrl(mode, selectedDateRange) {
   const url = new URL(window.location.href);
   if (mode === 'week') {
     url.searchParams.delete('dateMode');
-    url.searchParams.delete('dateValue');
+    url.searchParams.delete('dateStart');
+    url.searchParams.delete('dateEnd');
   } else {
     url.searchParams.set('dateMode', mode);
-    if (mode === 'pick' && selectedDate) {
-      const year = selectedDate.getFullYear();
-      const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
-      const day = String(selectedDate.getDate()).padStart(2, '0');
-      url.searchParams.set('dateValue', `${year}-${month}-${day}`);
+    if (
+      mode === 'range' &&
+      selectedDateRange?.startDate &&
+      selectedDateRange?.endDate
+    ) {
+      const formatDate = (date) => moment.tz(date, 'America/Los_Angeles').format('YYYY-MM-DD');
+      url.searchParams.set('dateStart', formatDate(selectedDateRange.startDate));
+      url.searchParams.set('dateEnd', formatDate(selectedDateRange.endDate));
     } else {
-      url.searchParams.delete('dateValue');
+      url.searchParams.delete('dateStart');
+      url.searchParams.delete('dateEnd');
     }
   }
   window.history.pushState({}, '', url);
@@ -366,19 +374,18 @@ export function isCurrentWeekLA(date) {
   return isCurrentWeek;
 }
 
-export function filterVideosByDate(videos, mode, selectedDate) {
+export function filterVideosByDate(videos, mode, selectedDateRange) {
   if (!videos) return videos;
   return videos.filter(video => {
     const videoDate = video.TimeWhenAdded;
     if (mode === 'week') return isCurrentWeekLA(videoDate);
     if (mode === 'today') return isToday(videoDate);
     if (mode === 'yesterday') return isYesterday(videoDate);
-    if (mode === 'pick' && selectedDate) {
-      return (
-        videoDate.getFullYear() === selectedDate.getFullYear() &&
-        videoDate.getMonth() === selectedDate.getMonth() &&
-        videoDate.getDate() === selectedDate.getDate()
-      );
+    if (mode === 'range' && selectedDateRange?.startDate && selectedDateRange?.endDate) {
+      const laVideoDate = moment.tz(videoDate, 'America/Los_Angeles');
+      const startDate = moment.tz(selectedDateRange.startDate, 'America/Los_Angeles').startOf('day');
+      const endDate = moment.tz(selectedDateRange.endDate, 'America/Los_Angeles').endOf('day');
+      return laVideoDate.isBetween(startDate, endDate, null, '[]');
     }
     return true;
   });
@@ -424,8 +431,8 @@ export function getDateRangeForFilter(mode, selectedDate) {
 
   switch (mode) {
     case 'week':
-      start = nowLA.clone().isoWeekday(1).startOf('day').format();
-      end = start.clone().add(7, 'days').format();
+      start = nowLA.clone().isoWeekday(1).startOf('day');
+      end = start.clone().add(6, 'days').endOf('day');
       break;
     case 'today':
       start = nowLA.clone().startOf('day').format();
@@ -436,17 +443,22 @@ export function getDateRangeForFilter(mode, selectedDate) {
       start = yesterday.startOf('day').format();
       end = yesterday.endOf('day').format();
       break;
-    case 'pick':
-      if (selectedDate) {
-        const laDate = moment.tz(selectedDate, 'America/Los_Angeles');
-        start = laDate.clone().startOf('day').format();
-        end = laDate.clone().endOf('day').format();
+    case 'range':
+      if (selectedDate?.startDate && selectedDate?.endDate) {
+        const laStartDate = moment.tz(selectedDate.startDate, 'America/Los_Angeles');
+        const laEndDate = moment.tz(selectedDate.endDate, 'America/Los_Angeles');
+        if (laStartDate.isAfter(laEndDate, 'day')) return { startDate: null, endDate: null };
+        start = laStartDate.clone().startOf('day');
+        end = laEndDate.clone().endOf('day');
       }
       break;
     default:
       return { startDate: null, endDate: null };
   }
-  return { startDate: start, endDate: end };
+  return {
+    startDate: start ? start.format() : null,
+    endDate: end ? end.format() : null,
+  };
 }
 
 export function videoKey(video) {

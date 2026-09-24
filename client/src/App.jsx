@@ -57,9 +57,6 @@ export default function App() {
   const initialState = getInitialState();
   const playerInitial = getPlayerInitialState();
 
-  const { loading, error, sortedVideos, filteredVideos, categoryName } = useVideos(
-    getDateFilterFromUrl()
-  );
   const [playingVideo, setPlayingVideo] = useState(null);
   const [playlistVersion, setPlaylistVersion] = useState(0);
   const markPlayedRef = useRef(null);
@@ -73,15 +70,20 @@ export default function App() {
     const { mode } = getDateFilterFromUrl();
     return mode;
   });
-  const [selectedDate, setSelectedDate] = useState(() => {
-    const { selectedDate } = getDateFilterFromUrl();
-    return selectedDate;
+  const [selectedDateRange, setSelectedDateRange] = useState(() => {
+    const { selectedDateRange } = getDateFilterFromUrl();
+    return selectedDateRange;
   });
 
   const [minUpvotes, setMinUpvotes] = useState(initialState.minUpvotes);
   const [minComments, setMinComments] = useState(initialState.minComments);
   const [sortMode, setSortMode] = useState(initialState.sortMode);
   const [selectedCategory, setSelectedCategory] = useState(null);
+
+  const { loading, error, sortedVideos, filteredVideos, categoryName } = useVideos({
+    dateMode: dateFilterMode,
+    selectedDateRange,
+  });
 
   // Modal states
   const [showFilter, setShowFilter] = useState(false);
@@ -92,8 +94,8 @@ export default function App() {
 
   // Sync filters with URL / localStorage
   useEffect(() => {
-    updateDateFilterInUrl(dateFilterMode, selectedDate);
-  }, [dateFilterMode, selectedDate]);
+    updateDateFilterInUrl(dateFilterMode, selectedDateRange);
+  }, [dateFilterMode, selectedDateRange]);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.SORT_MODE, sortMode);
@@ -116,7 +118,7 @@ export default function App() {
   }, [seconds]);
 
   // Apply all filters
-  const dateFilteredVideos = filterVideosByDate(filteredVideos, dateFilterMode, selectedDate);
+  const dateFilteredVideos = filterVideosByDate(filteredVideos, dateFilterMode, selectedDateRange);
   const votesCommentsFilteredVideos = filterVideosByVotesComments(
     dateFilteredVideos,
     minUpvotes,
@@ -169,9 +171,9 @@ export default function App() {
 
   }, []);
 
-  const handleDateFilterChange = useCallback((mode, date) => {
+  const handleDateFilterChange = useCallback((mode, dateRange) => {
     setDateFilterMode(mode);
-    setSelectedDate(date);
+    setSelectedDateRange(dateRange);
   }, []);
 
   const handleMinutesChange = (e) => {
@@ -266,7 +268,7 @@ export default function App() {
           sortMode={sortMode}
           onSortModeChange={setSortMode}
           dateFilterMode={dateFilterMode}
-          selectedDate={selectedDate}
+          selectedDateRange={selectedDateRange}
           onDateFilterChange={handleDateFilterChange}
           minUpvotes={minUpvotes}
           minComments={minComments}

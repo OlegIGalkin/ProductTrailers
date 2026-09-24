@@ -20,7 +20,7 @@ router.get('/', async (req, res) => {
       params.push(startDate);
     }
     if (endDate) {
-      sql += ' AND time_when_added < ?';
+      sql += ' AND time_when_added <= ?';
       params.push(endDate);
     }
 

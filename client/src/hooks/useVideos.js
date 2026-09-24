@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { processVideos, getDateRangeForFilter } from '../lib/videoLogic.js';
 
 export function useVideos(dateFilters) {
-  const { dateMode, selectedDate } = dateFilters;
+  const { dateMode, selectedDateRange } = dateFilters;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sortedVideos, setSortedVideos] = useState([]);
@@ -14,7 +14,7 @@ export function useVideos(dateFilters) {
     async function load() {
       setLoading(true);
       try {
-        const { startDate, endDate } = getDateRangeForFilter(dateMode, selectedDate);
+        const { startDate, endDate } = getDateRangeForFilter(dateMode, selectedDateRange);
         const params = new URLSearchParams();
         if (startDate) params.append('startDate', startDate);
         if (endDate) params.append('endDate', endDate);
@@ -37,7 +37,11 @@ export function useVideos(dateFilters) {
     }
     load();
     return () => { cancelled = true; };
-  }, []);
+  }, [
+    dateMode,
+    selectedDateRange?.startDate?.getTime(),
+    selectedDateRange?.endDate?.getTime(),
+  ]);
 
   return { loading, error, sortedVideos, filteredVideos, categoryName };
 }
