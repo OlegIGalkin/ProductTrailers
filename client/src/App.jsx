@@ -80,7 +80,7 @@ export default function App() {
   const [sortMode, setSortMode] = useState(initialState.sortMode);
   const [selectedCategory, setSelectedCategory] = useState(null);
 
-  const { loading, error, sortedVideos, filteredVideos, categoryName } = useVideos({
+  const { loading, hasLoaded, error, sortedVideos, filteredVideos, categoryName } = useVideos({
     dateMode: dateFilterMode,
     selectedDateRange,
   });
@@ -208,7 +208,7 @@ export default function App() {
     );
   };
 
-  if (loading) {
+  if (loading && !hasLoaded) {
   return (
     <div className="loading-screen">
       <h1>Loading playlist...</h1>

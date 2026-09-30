@@ -247,6 +247,8 @@ const YouTubePlayer = forwardRef(
             onReady: () => {
               playerReadyRef.current = true;
               syncPlayerSize();
+              playerRef.current?.setVolume?.(100);
+              playerRef.current?.mute?.();
             },
             onStateChange: (e) => {
               if (e.data === window.YT.PlayerState.ENDED) {

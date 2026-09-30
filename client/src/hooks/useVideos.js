@@ -4,6 +4,7 @@ import { processVideos, getDateRangeForFilter } from '../lib/videoLogic.js';
 export function useVideos(dateFilters) {
   const { dateMode, selectedDateRange } = dateFilters;
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [error, setError] = useState(null);
   const [sortedVideos, setSortedVideos] = useState([]);
   const [filteredVideos, setFilteredVideos] = useState([]);
@@ -32,7 +33,10 @@ export function useVideos(dateFilters) {
       } catch (e) {
         if (!cancelled) setError(e.message);
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+          setHasLoaded(true);
+        }
       }
     }
     load();
@@ -43,5 +47,5 @@ export function useVideos(dateFilters) {
     selectedDateRange?.endDate?.getTime(),
   ]);
 
-  return { loading, error, sortedVideos, filteredVideos, categoryName };
+  return { loading, hasLoaded, error, sortedVideos, filteredVideos, categoryName };
 }
