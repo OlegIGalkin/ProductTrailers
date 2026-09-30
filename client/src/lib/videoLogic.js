@@ -435,13 +435,13 @@ export function getDateRangeForFilter(mode, selectedDate) {
       end = start.clone().add(6, 'days').endOf('day');
       break;
     case 'today':
-      start = nowLA.clone().startOf('day').format();
-      end = nowLA.clone().endOf('day').format();
+      start = nowLA.clone().startOf('day');
+      end = nowLA.clone().endOf('day');
       break;
     case 'yesterday':
       const yesterday = nowLA.clone().subtract(1, 'day');
-      start = yesterday.startOf('day').format();
-      end = yesterday.endOf('day').format();
+      start = yesterday.clone().startOf('day');
+      end = yesterday.clone().endOf('day');
       break;
     case 'range':
       if (selectedDate?.startDate && selectedDate?.endDate) {
@@ -456,8 +456,8 @@ export function getDateRangeForFilter(mode, selectedDate) {
       return { startDate: null, endDate: null };
   }
   return {
-    startDate: start ? start.format() : null,
-    endDate: end ? end.format() : null,
+    startDate: start ? start.format('YYYY-MM-DD') : null,
+    endDate: end ? end.format('YYYY-MM-DD') : null,
   };
 }
 
