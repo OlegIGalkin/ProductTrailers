@@ -93,9 +93,9 @@ export default function FilterControls({
                 }}
                 style={{ padding: '4px 8px' }}
               >
-                <option value="week">Current Week (Mon–Sun)</option>
-                <option value="today">Today</option>
                 <option value="yesterday">Yesterday</option>
+                <option value="today">Today</option>
+                <option value="week">Current Week (Mon–Sun)</option>
                 <option value="range">Pick a Date Range</option>
               </select>
               {localDateFilterMode === 'range' && (

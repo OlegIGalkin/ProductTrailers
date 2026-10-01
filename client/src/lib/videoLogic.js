@@ -312,10 +312,10 @@ export function countTodayVideos(allVideos) {
 
 export function getDateFilterFromUrl() {
   const params = getURLParameters();
-  const requestedMode = params['dateMode'] || 'week';
+  const requestedMode = params['dateMode'] || 'yesterday';
   const mode = ['week', 'today', 'yesterday', 'range'].includes(requestedMode)
     ? requestedMode
-    : 'week';
+    : 'yesterday';
   const parseDate = (dateValue) => {
     if (!dateValue) return null;
     const laMoment = moment.tz(dateValue, 'YYYY-MM-DD', true, 'America/Los_Angeles');
@@ -340,11 +340,12 @@ export function createLADateInstance(dateValue) {
 
 export function updateDateFilterInUrl(mode, selectedDateRange) {
   const url = new URL(window.location.href);
+
   if (mode === 'week') {
-    url.searchParams.delete('dateMode');
+    url.searchParams.set('dateMode', 'week');
     url.searchParams.delete('dateStart');
     url.searchParams.delete('dateEnd');
-  } else {
+  } else if (mode === 'today' || mode === 'yesterday' || mode === 'range') {
     url.searchParams.set('dateMode', mode);
     if (
       mode === 'range' &&
@@ -358,7 +359,12 @@ export function updateDateFilterInUrl(mode, selectedDateRange) {
       url.searchParams.delete('dateStart');
       url.searchParams.delete('dateEnd');
     }
+  } else {
+    url.searchParams.delete('dateMode');
+    url.searchParams.delete('dateStart');
+    url.searchParams.delete('dateEnd');
   }
+
   window.history.pushState({}, '', url);
 }
 
