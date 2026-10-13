@@ -12,6 +12,7 @@ export default function PlaylistTable({
   playingVideo,
   playlistVersion,
   onMarkPlayedRef,
+  maxDuration,
 }) {
   // Load search from localStorage (default '')
   const [search, setSearch] = useState(() => {
@@ -76,6 +77,15 @@ export default function PlaylistTable({
         );
       });
   }, [filteredVideos, search, rowStyles, playlistVersion]);
+
+  const unwatchedCount = useMemo(
+    () =>
+      filteredVideos.filter(
+        (video) => !isVideoWatched(video.VideoURL, video.TimeWhenAdded)
+      ).length,
+    [filteredVideos, playlistVersion]
+  );
+  const estimatedRemainingSeconds = unwatchedCount * maxDuration;
 
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
 
@@ -150,7 +160,17 @@ export default function PlaylistTable({
         <div>
           <span style={{ backgroundColor: '#e6f7ff', padding: '2px 6px' }}>Blue bg</span> watching &nbsp;
           <span style={{ backgroundColor: '#f5f5f5', padding: '2px 6px' }}>Gray bg</span> watched &nbsp;
-          Total: {filteredRows.length}
+          Unwatched: {unwatchedCount}
+          {maxDuration !== 0 && (
+            <>
+              {', '}Estimated time left:{' '}
+              {estimatedRemainingSeconds >= 3600 && (
+                <>{Math.floor(estimatedRemainingSeconds / 3600)}h{' '}</>
+              )}
+              {Math.floor((estimatedRemainingSeconds % 3600) / 60)}m{' '}
+              {estimatedRemainingSeconds % 60}sec
+            </>
+          )}
         </div>
       </div>
 

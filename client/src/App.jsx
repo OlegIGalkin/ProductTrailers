@@ -294,6 +294,7 @@ export default function App() {
           playingVideo={playingVideo}
           playlistVersion={playlistVersion}
           onMarkPlayedRef={markPlayedRef}
+          maxDuration={minutes * 60 + seconds}
         />
       </Modal>
 
