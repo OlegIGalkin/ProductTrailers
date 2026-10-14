@@ -275,10 +275,15 @@ p {
 }
 
 /* --- Top Menu --- */
-.top-menu {
+.top-menu-shell {
   position: fixed;
   top: 0;
   left: 0;
+  width: 100%;
+  z-index: 10;
+}
+
+.top-menu {
   width: 100%;
   background: #303030;
   backdrop-filter: blur(8px);
@@ -292,6 +297,29 @@ p {
   gap: 8px;
   flex-wrap: nowrap;
   overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.top-menu::-webkit-scrollbar {
+  display: none;
+}
+
+.menu-scroll-indicator {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 36px;
+  padding-right: 8px;
+  box-sizing: border-box;
+  background: linear-gradient(90deg, transparent, #303030 65%);
+  color: #fff;
+  font-size: 26px;
+  line-height: 1;
+  pointer-events: none;
 }
 
 .menu-left {
