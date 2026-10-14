@@ -158,12 +158,10 @@ export default function PlaylistTable({
           }}
         />
         <div>
-          <span style={{ backgroundColor: '#e6f7ff', padding: '2px 6px' }}>Blue bg</span> watching &nbsp;
-          <span style={{ backgroundColor: '#f5f5f5', padding: '2px 6px' }}>Gray bg</span> watched &nbsp;
           Unwatched: {unwatchedCount}
           {maxDuration !== 0 && (
             <>
-              {', '}Estimated time left:{' '}
+              {', '}Est. time left:{' '}
               {estimatedRemainingSeconds >= 3600 && (
                 <>{Math.floor(estimatedRemainingSeconds / 3600)}h{' '}</>
               )}
@@ -171,6 +169,10 @@ export default function PlaylistTable({
               {estimatedRemainingSeconds % 60}sec
             </>
           )}
+        </div>
+        <div>
+          <span style={{ backgroundColor: '#e6f7ff', padding: '2px 6px' }}>Blue bg</span> watching &nbsp;
+          <span style={{ backgroundColor: '#f5f5f5', padding: '2px 6px' }}>Gray bg</span> watched &nbsp;
         </div>
       </div>
 
