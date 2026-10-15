@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { processVideos, getDateRangeForFilter } from '../lib/videoLogic.js';
 
-export function useVideos(dateFilters) {
+export function useVideos(dateFilters, onEmptyResults) {
   const { dateMode, selectedDateRange } = dateFilters;
   const [loading, setLoading] = useState(true);
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -24,6 +24,7 @@ export function useVideos(dateFilters) {
         if (!res.ok) throw new Error(`Failed to load videos: ${res.status}`);
         const raw = await res.json();
         if (cancelled) return;
+        if (raw.length === 0) onEmptyResults?.(dateMode);
 
         // processVideos now only does client-side shuffling and category extraction
         const processed = processVideos(raw);
@@ -45,6 +46,7 @@ export function useVideos(dateFilters) {
     dateMode,
     selectedDateRange?.startDate?.getTime(),
     selectedDateRange?.endDate?.getTime(),
+    onEmptyResults,
   ]);
 
   return { loading, hasLoaded, error, sortedVideos, filteredVideos, categoryName };

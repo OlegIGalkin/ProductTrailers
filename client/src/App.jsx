@@ -27,6 +27,16 @@ export default function App() {
     PLAYER_SECONDS: 'player_seconds',
   };
 
+  const [hasStoredFilterSettings] = useState(() =>
+    [
+      STORAGE_KEYS.SORT_MODE,
+      STORAGE_KEYS.DATE_FILTER_MODE,
+      STORAGE_KEYS.DATE_FILTER_VALUE,
+      STORAGE_KEYS.MIN_UPVOTES,
+      STORAGE_KEYS.MIN_COMMENTS,
+    ].some((key) => localStorage.getItem(key) !== null)
+  );
+
   const getInitialState = () => {
     const sort = localStorage.getItem(STORAGE_KEYS.SORT_MODE);
     const upvotes = localStorage.getItem(STORAGE_KEYS.MIN_UPVOTES);
@@ -80,10 +90,16 @@ export default function App() {
   const [sortMode, setSortMode] = useState(initialState.sortMode);
   const [selectedCategory, setSelectedCategory] = useState(null);
 
+  const handleEmptyDateResults = useCallback((mode) => {
+    if (!hasStoredFilterSettings && (mode === 'yesterday' || mode === 'today')) {
+      setDateFilterMode('week');
+    }
+  }, [hasStoredFilterSettings]);
+
   const { loading, hasLoaded, error, sortedVideos, filteredVideos, categoryName } = useVideos({
     dateMode: dateFilterMode,
     selectedDateRange,
-  });
+  }, handleEmptyDateResults);
 
   // Modal states
   const [showFilter, setShowFilter] = useState(false);
