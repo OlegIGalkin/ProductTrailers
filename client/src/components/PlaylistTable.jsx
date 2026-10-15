@@ -125,9 +125,9 @@ export default function PlaylistTable({
   const getRowBackgroundColor = (style) => {
     switch (style) {
       case 'playing':
-        return '#e6f7ff';
+        return '#0094FF';
       case 'watched':
-        return '#f5f5f5';
+        return '#C0C0C0';
       default:
         return 'transparent';
     }
@@ -171,8 +171,8 @@ export default function PlaylistTable({
           )}
         </div>
         <div>
-          <span style={{ backgroundColor: '#e6f7ff', padding: '2px 6px' }}>Blue bg</span> watching &nbsp;
-          <span style={{ backgroundColor: '#f5f5f5', padding: '2px 6px' }}>Gray bg</span> watched &nbsp;
+          <span style={{ backgroundColor: '#0094FF', padding: '2px 6px' }}>Blue bg</span> watching &nbsp;
+          <span style={{ backgroundColor: '#C0C0C0', padding: '2px 6px' }}>Gray bg</span> watched &nbsp;
         </div>
       </div>
 
