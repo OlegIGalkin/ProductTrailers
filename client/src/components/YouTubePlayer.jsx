@@ -16,7 +16,7 @@ import {
 let ytApiLoading = false;
 let ytApiReady = false;
 const ytReadyCallbacks = [];
-const fullscreenRestoreTransitionTimeout = 5000;
+const fullscreenRestoreTransitionTimeout = 10000;
 const fullscreenRestorePlaybackGracePeriod = 5000;
 
 function loadYouTubeApi() {
