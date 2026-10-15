@@ -16,6 +16,8 @@ import {
 let ytApiLoading = false;
 let ytApiReady = false;
 const ytReadyCallbacks = [];
+const fullscreenRestoreTransitionTimeout = 5000;
+const fullscreenRestorePlaybackGracePeriod = 5000;
 
 function loadYouTubeApi() {
   if (ytApiReady || (window.YT && window.YT.Player)) {
@@ -160,7 +162,21 @@ const YouTubePlayer = forwardRef(
       if (fullscreenRestoreTimerRef.current) {
         clearTimeout(fullscreenRestoreTimerRef.current);
       }
-      fullscreenRestoreTimerRef.current = setTimeout(clearFullscreenRestore, 3000);
+      fullscreenRestoreTimerRef.current = setTimeout(
+        clearFullscreenRestore,
+        fullscreenRestoreTransitionTimeout
+      );
+    };
+
+    const extendFullscreenRestoreAfterPlaybackStarts = () => {
+      if (!fullscreenRestorePendingRef.current) return;
+      if (fullscreenRestoreTimerRef.current) {
+        clearTimeout(fullscreenRestoreTimerRef.current);
+      }
+      fullscreenRestoreTimerRef.current = setTimeout(
+        clearFullscreenRestore,
+        fullscreenRestorePlaybackGracePeriod
+      );
     };
 
     const playNext = () => {
@@ -316,7 +332,7 @@ const YouTubePlayer = forwardRef(
                 playNext();
                 //console.log('YT Player ended, playing next video');
               } else if (e.data === window.YT.PlayerState.PLAYING) {
-                clearFullscreenRestore();
+                extendFullscreenRestoreAfterPlaybackStarts();
                 setIsPlaying(true);
                 startTimeChecking();
                 //console.log('YT Player started playing');
