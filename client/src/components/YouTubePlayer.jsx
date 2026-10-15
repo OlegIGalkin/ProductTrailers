@@ -66,6 +66,8 @@ const YouTubePlayer = forwardRef(
     const timeCheckIntervalRef = useRef(null);
     const isPlayingRef = useRef(false);
     const playerReadyRef = useRef(false);
+    const fullscreenRestorePendingRef = useRef(false);
+    const fullscreenRestoreTimerRef = useRef(null);
 
     // Refs for minutes and seconds to avoid stale closures
     const minutesRef = useRef(minutes);
@@ -129,6 +131,38 @@ const YouTubePlayer = forwardRef(
         : null;
     };
 
+    const clearFullscreenRestore = () => {
+      fullscreenRestorePendingRef.current = false;
+      if (fullscreenRestoreTimerRef.current) {
+        clearTimeout(fullscreenRestoreTimerRef.current);
+        fullscreenRestoreTimerRef.current = null;
+      }
+    };
+
+    const requestWrapperFullscreen = () => {
+      const wrapper = wrapperRef.current;
+      if (!wrapper?.requestFullscreen) {
+        console.warn('Cannot restore fullscreen: requestFullscreen is not supported.');
+        return;
+      }
+
+      try {
+        wrapper.requestFullscreen().catch((error) => {
+          console.warn('Could not restore player fullscreen:', error);
+        });
+      } catch (error) {
+        console.warn('Could not restore player fullscreen:', error);
+      }
+    };
+
+    const beginFullscreenRestore = () => {
+      fullscreenRestorePendingRef.current = true;
+      if (fullscreenRestoreTimerRef.current) {
+        clearTimeout(fullscreenRestoreTimerRef.current);
+      }
+      fullscreenRestoreTimerRef.current = setTimeout(clearFullscreenRestore, 3000);
+    };
+
     const playNext = () => {
 
       if (!playerRef.current) return;
@@ -159,10 +193,24 @@ const YouTubePlayer = forwardRef(
       updateNextButtonState(nextVideo);
 
       if (videoId && playerRef.current.loadVideoById) {
+        const wrapper = wrapperRef.current;
+        const fullscreenElement = document.fullscreenElement;
+        const wasPlayerFullscreen = !!(
+          wrapper &&
+          fullscreenElement &&
+          wrapper.contains(fullscreenElement)
+        );
+
+        if (wasPlayerFullscreen) beginFullscreenRestore();
+
         try {
           playerRef.current.loadVideoById(videoId);
+          if (wasPlayerFullscreen && fullscreenElement !== wrapper) {
+            requestWrapperFullscreen();
+          }
           setIsPlaying(false);
         } catch (err) {
+          clearFullscreenRestore();
           playNext();
         }
       } else if (playerRef.current.stopVideo) {
@@ -200,6 +248,18 @@ const YouTubePlayer = forwardRef(
     useEffect(() => {
       let destroyed = false;
       let resizeObserver = null;
+
+      const handleFullscreenChange = () => {
+        const wrapper = wrapperRef.current;
+        const fullscreenElement = document.fullscreenElement;
+        if (wrapper && fullscreenElement && wrapper.contains(fullscreenElement)) return;
+        if (!fullscreenRestorePendingRef.current) return;
+
+        clearFullscreenRestore();
+        requestWrapperFullscreen();
+      };
+
+      document.addEventListener('fullscreenchange', handleFullscreenChange);
 
       const syncPlayerSize = () => {
         const wrapper = wrapperRef.current;
@@ -256,6 +316,7 @@ const YouTubePlayer = forwardRef(
                 playNext();
                 //console.log('YT Player ended, playing next video');
               } else if (e.data === window.YT.PlayerState.PLAYING) {
+                clearFullscreenRestore();
                 setIsPlaying(true);
                 startTimeChecking();
                 //console.log('YT Player started playing');
@@ -282,6 +343,8 @@ const YouTubePlayer = forwardRef(
       return () => {
         destroyed = true;
         stopTimeChecking();
+        clearFullscreenRestore();
+        document.removeEventListener('fullscreenchange', handleFullscreenChange);
         resizeObserver?.disconnect();
         window.removeEventListener('resize', syncPlayerSize);
         playerRef.current?.destroy?.();
