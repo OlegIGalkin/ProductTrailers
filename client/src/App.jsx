@@ -16,6 +16,21 @@ import {
   getVideoToPlayNext,
 } from './lib/videoLogic.js';
 
+const Modal = ({ isOpen, onClose, title, children }) => {
+  if (!isOpen) return null;
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>{title}</h2>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+        <div className="modal-body">{children}</div>
+      </div>
+    </div>
+  );
+};
+
 export default function App() {
   const STORAGE_KEYS = {
     SORT_MODE: 'playlist_sort_mode',
@@ -207,22 +222,6 @@ export default function App() {
       playerRef.current.playNext();
     }
   }, []);
-
-  // Modal component
-  const Modal = ({ isOpen, onClose, title, children }) => {
-    if (!isOpen) return null;
-    return (
-      <div className="modal-overlay" onClick={onClose}>
-        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-          <div className="modal-header">
-            <h2>{title}</h2>
-            <button className="modal-close" onClick={onClose}>×</button>
-          </div>
-          <div className="modal-body">{children}</div>
-        </div>
-      </div>
-    );
-  };
 
   if (loading && !hasLoaded) {
   return (
