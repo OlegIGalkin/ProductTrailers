@@ -186,15 +186,20 @@ export default function PlaylistTable({
               <th>Description</th>
               <th>Upvotes</th>
               <th>Comments</th>
+              <th>Video</th>
               <th>Categories</th>
             </tr>
           </thead>
           <tbody>
             {pageRows.map(({ video, style }, i) => {
               const titleCell = (
-                <a href={video.VideoURL} target="_blank" rel="noreferrer">
-                  {video.Title}
-                </a>
+                video.SourceLink ? (
+                  <a href={video.SourceLink} target="_blank" rel="noreferrer">
+                    {video.Title}
+                  </a>
+                ) : (
+                  video.Title
+                )
               );
               return (
                 <tr key={videoKey(video)} style={{ backgroundColor: getRowBackgroundColor(style) }}>
@@ -203,6 +208,11 @@ export default function PlaylistTable({
                   <td className="tTable-description">{video.Description || ''}</td>
                   <td>{video.Votes ?? 0}</td>
                   <td>{video.Comments ?? 0}</td>
+                  <td>
+                    <a href={video.VideoURL} target="_blank" rel="noreferrer">
+                      🎥
+                    </a>
+                  </td>
                   <td>{video.Categories || ''}</td>
                 </tr>
               );
