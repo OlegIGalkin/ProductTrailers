@@ -50,10 +50,15 @@ export default async (req: Request, context: Context) => {
     const result = await db.execute(sql, params);
     const rows = result.rows.map(rowToApi);
 
-    // Cache for 6 hours for real browser requests
+    // Cache until the next 00:15 or 12:15 America/Los_Angeles time.
+    const ttl = getSecondsUntilNextReset();
+
     return Response.json(rows, {
       headers: {
-        'Cache-Control': 'public, max-age=28800'
+        // Netlify CDN cache
+        'Netlify-CDN-Cache-Control': `public, s-maxage=${ttl}, stale-while-revalidate=300`,
+        // Browser cache
+        'Cache-Control': `public, max-age=${ttl}, stale-while-revalidate=300`,
       }
     });
   } catch (error) {
@@ -145,4 +150,45 @@ function isRealBrowser(userAgent: string): boolean {
                           /Safari\/\d+/.test(userAgent);
 
   return hasBrowserIndicator || hasBrowserFormat;
+}
+
+function getSecondsUntilNextReset(): number {
+  const now = new Date();
+
+  // Get current America/Los_Angeles time components.
+  // hourCycle: 'h23' ensures midnight is 00, not 24.
+  const laTime = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Los_Angeles',
+    hourCycle: 'h23',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  }).formatToParts(now);
+
+  const getPart = (type: 'hour' | 'minute' | 'second'): number => {
+    const part = laTime.find((p) => p.type === type);
+    return part ? parseInt(part.value, 10) : 0;
+  };
+
+  const laHour = getPart('hour');
+  const laMinute = getPart('minute');
+  const laSecond = getPart('second');
+
+  // Reset times in minutes from midnight:
+  // 00:15 => 15
+  // 12:15 => 735
+  const resetMinutes = [15, 735];
+
+  const currentMinutes = laHour * 60 + laMinute;
+  const nextResetMinutes =
+    resetMinutes.find((m) => m > currentMinutes) ?? resetMinutes[0] + 1440;
+
+  const secondsIntoDay = currentMinutes * 60 + laSecond;
+  const targetSeconds = nextResetMinutes * 60;
+
+  if (targetSeconds > secondsIntoDay) {
+    return targetSeconds - secondsIntoDay;
+  }
+
+  return 1440 * 60 - (secondsIntoDay - targetSeconds);
 }
