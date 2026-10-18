@@ -5,6 +5,10 @@ export default function Layout({
   children,
   onFilterClick,
   onPlaylistClick,
+  onFavoritesClick,
+  onAddFavorite,
+  isPlayingVideoFavorite,
+  hasPlayingVideo,
   onAboutClick,
   onNextClick,
   minutes,
@@ -59,6 +63,26 @@ export default function Layout({
             >
               Next Video ▶
             </button>
+            <div className="menu-favorites">
+              <button
+                className="menu-btn"
+                onClick={onFavoritesClick}
+                aria-label="Favorites"
+                title="Favorites"
+              >
+                ✨
+              </button>
+              <button
+                className={`menu-btn add-favorite-btn${isPlayingVideoFavorite ? ' is-favorite' : ''}`}
+                onClick={onAddFavorite}
+                disabled={!hasPlayingVideo}
+                aria-label="Add To Favorites"
+                aria-pressed={isPlayingVideoFavorite}
+                title={isPlayingVideoFavorite ? 'Added to favorites' : 'Add currently playing product to favorites'}
+              >
+                ⭐
+              </button>
+            </div>
             <CompactDurationControls
               minutes={minutes}
               seconds={seconds}

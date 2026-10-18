@@ -4,6 +4,8 @@ This web app turns Product Hunt products into a continuous video feed. It embeds
 
 This is a React client app, with a local Express API used for development and data access.
 
+Products can be saved to browser-local favorites from the player controls or playlist and managed in the Favorites menu.
+
 Unfortunately, there aren’t many places where you can showcase your app.
 
 On Reddit, they ban you or delete your posts. X and other social media are filled with noise and spam. Startup directories are only useful for getting a backlink to your website.

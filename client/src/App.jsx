@@ -14,7 +14,33 @@ import {
   filterVideosByCategory,
   getCategories,
   getVideoToPlayNext,
+  videoKey,
 } from './lib/videoLogic.js';
+
+const FAVORITES_STORAGE_KEY = 'favorite_products';
+
+function loadFavorites() {
+  try {
+    const storedFavorites = localStorage.getItem(FAVORITES_STORAGE_KEY);
+    if (!storedFavorites) return { items: [], error: null };
+
+    const parsedFavorites = JSON.parse(storedFavorites);
+    if (!Array.isArray(parsedFavorites)) {
+      throw new Error('Saved favorites must be a list.');
+    }
+
+    const items = parsedFavorites.map((video) => {
+      const timeWhenAdded = new Date(video.TimeWhenAdded);
+      if (!video.VideoURL || Number.isNaN(timeWhenAdded.getTime())) {
+        throw new Error('A saved favorite is missing valid product information.');
+      }
+      return { ...video, TimeWhenAdded: timeWhenAdded };
+    });
+    return { items, error: null };
+  } catch (error) {
+    return { items: [], error: `Unable to load favorites: ${error.message}` };
+  }
+}
 
 const Modal = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null;
@@ -119,9 +145,48 @@ export default function App() {
   // Modal states
   const [showFilter, setShowFilter] = useState(false);
   const [showPlaylist, setShowPlaylist] = useState(false);
+  const [showFavorites, setShowFavorites] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
+  const [favoriteState, setFavoriteState] = useState(loadFavorites);
+  const favorites = favoriteState.items;
 
   const playerRef = useRef(null);
+
+  const saveFavorites = useCallback((nextFavorites) => {
+    try {
+      localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(nextFavorites));
+      setFavoriteState({ items: nextFavorites, error: null });
+    } catch (error) {
+      setFavoriteState((current) => ({
+        ...current,
+        error: `Unable to save favorites: ${error.message}`,
+      }));
+    }
+  }, []);
+
+  const handleAddFavorite = useCallback((video) => {
+    if (!video) return;
+    if (favorites.some((favorite) => videoKey(favorite) === videoKey(video))) return;
+    saveFavorites([...favorites, video]);
+  }, [favorites, saveFavorites]);
+
+  const handleRemoveFavorite = useCallback((video) => {
+    saveFavorites(favorites.filter((favorite) => videoKey(favorite) !== videoKey(video)));
+  }, [favorites, saveFavorites]);
+
+  const handleToggleFavorite = useCallback((video) => {
+    if (!video) return;
+    const isAlreadyFavorite = favorites.some((favorite) => videoKey(favorite) === videoKey(video));
+    if (isAlreadyFavorite) {
+      handleRemoveFavorite(video);
+      return;
+    }
+    handleAddFavorite(video);
+  }, [favorites, handleAddFavorite, handleRemoveFavorite]);
+
+  const handleClearFavorites = useCallback(() => {
+    saveFavorites([]);
+  }, [saveFavorites]);
 
   // Sync filters with URL / localStorage
   useEffect(() => {
@@ -236,6 +301,10 @@ export default function App() {
       <Layout
         onFilterClick={() => {}}
         onPlaylistClick={() => {}}
+        onFavoritesClick={() => {}}
+        onAddFavorite={() => {}}
+        isPlayingVideoFavorite={false}
+        hasPlayingVideo={false}
         onAboutClick={() => {}}
         onNextClick={() => {}}
         minutes={minutes}
@@ -258,6 +327,13 @@ export default function App() {
       <Layout
         onFilterClick={() => setShowFilter(true)}
         onPlaylistClick={() => setShowPlaylist(true)}
+        onFavoritesClick={() => setShowFavorites(true)}
+        onAddFavorite={() => handleToggleFavorite(playingVideo)}
+        isPlayingVideoFavorite={
+          !!playingVideo &&
+          favorites.some((favorite) => videoKey(favorite) === videoKey(playingVideo))
+        }
+        hasPlayingVideo={!!playingVideo}
         onAboutClick={() => setShowAbout(true)}
         onNextClick={handlePlayNext}
         minutes={minutes}
@@ -310,6 +386,26 @@ export default function App() {
           playlistVersion={playlistVersion}
           onMarkPlayedRef={markPlayedRef}
           maxDuration={minutes * 60 + seconds}
+          favorites={favorites}
+          onAddFavorite={handleToggleFavorite}
+        />
+      </Modal>
+
+      {/* Favorites Modal */}
+      <Modal isOpen={showFavorites} onClose={() => setShowFavorites(false)} title="Favorites ✨">
+        {favoriteState.error && (
+          <p className="favorites-error" role="alert">{favoriteState.error}</p>
+        )}
+        <PlaylistTable
+          filteredVideos={favorites}
+          playingVideo={playingVideo}
+          playlistVersion={playlistVersion}
+          onMarkPlayedRef={null}
+          maxDuration={0}
+          favorites={favorites}
+          onRemoveFavorite={handleRemoveFavorite}
+          onClearFavorites={handleClearFavorites}
+          isFavoritesView
         />
       </Modal>
 

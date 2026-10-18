@@ -350,6 +350,13 @@ p {
   min-width: 0;
 }
 
+.menu-favorites {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .menu-btn {
   background: transparent;
   border: none;
@@ -382,6 +389,55 @@ p {
 .menu-btn.next-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+.menu-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.menu-btn.add-favorite-btn.is-favorite {
+  background: linear-gradient(135deg, #facc15, #d97706);
+  color: #fff;
+  box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.35);
+}
+
+.favorite-action-cell {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.favorite-row-btn {
+  border: 1px solid rgba(217, 119, 6, 0.25);
+  border-radius: 6px;
+  padding: 3px 7px;
+  background: rgba(255, 255, 255, 0.7);
+  color: #8a8a8a;
+  cursor: pointer;
+  font-size: 16px;
+  transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.favorite-row-btn.is-favorite {
+  background: linear-gradient(135deg, #fef3c7, #fbbf24);
+  color: #92400e;
+  border-color: #d97706;
+  box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.4);
+}
+
+.favorite-row-btn:hover {
+  background: #ffe08a;
+}
+
+.remove-favorite-btn {
+  color: #a22;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.favorites-error {
+  color: #a22;
+  font-weight: 600;
 }
 
 /* Compact Duration Controls */

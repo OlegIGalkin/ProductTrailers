@@ -13,10 +13,19 @@ export default function PlaylistTable({
   playlistVersion,
   onMarkPlayedRef,
   maxDuration,
+  favorites = [],
+  onAddFavorite,
+  onRemoveFavorite,
+  onClearFavorites,
+  isFavoritesView = false,
 }) {
+  const searchStorageKey = isFavoritesView
+    ? 'favorites_search_query'
+    : SEARCH_STORAGE_KEY;
+
   // Load search from localStorage (default '')
   const [search, setSearch] = useState(() => {
-    return localStorage.getItem(SEARCH_STORAGE_KEY) || '';
+    return localStorage.getItem(searchStorageKey) || '';
   });
 
   const [page, setPage] = useState(1);
@@ -24,8 +33,8 @@ export default function PlaylistTable({
 
   // Persist search to localStorage
   useEffect(() => {
-    localStorage.setItem(SEARCH_STORAGE_KEY, search);
-  }, [search]);
+    localStorage.setItem(searchStorageKey, search);
+  }, [search, searchStorageKey]);
 
   // Mark played callback
   const markPlayed = useCallback((video) => {
@@ -145,9 +154,18 @@ export default function PlaylistTable({
           marginBottom: 12,
         }}
       >
+        {isFavoritesView && (
+          <button
+            type="button"
+            onClick={onClearFavorites}
+            disabled={favorites.length === 0}
+          >
+            Delete All Favorites
+          </button>
+        )}
         <input
           type="search"
-          placeholder="Search playlist..."
+          placeholder={isFavoritesView ? 'Search favorites...' : 'Search playlist...'}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           style={{
@@ -157,7 +175,7 @@ export default function PlaylistTable({
             boxSizing: 'border-box',
           }}
         />
-        <div>
+        {!isFavoritesView && <div>
           <strong>Unwatched: </strong>{unwatchedCount}
           {maxDuration !== 0 && (
             <>
@@ -169,11 +187,11 @@ export default function PlaylistTable({
               {estimatedRemainingSeconds % 60}s.
             </>
           )}
-        </div>
-        <div>
+        </div>}
+        {!isFavoritesView && <div>
           <span style={{ backgroundColor: '#0094FF', padding: '2px 6px' }}>Blue bg</span> watching &nbsp;
           <span style={{ backgroundColor: '#C0C0C0', padding: '2px 6px' }}>Gray bg</span> watched &nbsp;
-        </div>
+        </div>}
       </div>
 
       {/* Main table */}
@@ -188,6 +206,7 @@ export default function PlaylistTable({
               <th>Comments</th>
               <th>Video</th>
               <th>Categories</th>
+              {isFavoritesView ? <th>Delete</th> : <th>✨</th>}
             </tr>
           </thead>
           <tbody>
@@ -200,6 +219,9 @@ export default function PlaylistTable({
                 ) : (
                   video.Title
                 )
+              );
+              const isFavorite = favorites.some(
+                (favorite) => videoKey(favorite) === videoKey(video)
               );
               return (
                 <tr key={videoKey(video)} style={{ backgroundColor: getRowBackgroundColor(style) }}>
@@ -214,6 +236,30 @@ export default function PlaylistTable({
                     </a>
                   </td>
                   <td>{video.Categories || ''}</td>
+                  <td className="favorite-action-cell">
+                    {isFavoritesView ? (
+                      <button
+                        type="button"
+                        className="favorite-row-btn remove-favorite-btn"
+                        onClick={() => onRemoveFavorite(video)}
+                        aria-label={`Delete ${video.Title} from favorites`}
+                        title="Delete from favorites"
+                      >
+                        ×
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className={`favorite-row-btn${isFavorite ? ' is-favorite' : ''}`}
+                        onClick={() => onAddFavorite(video)}
+                        aria-label={isFavorite ? `${video.Title} is in favorites` : `Add ${video.Title} to favorites`}
+                        aria-pressed={isFavorite}
+                        title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                      >
+                        ⭐
+                      </button>
+                    )}
+                  </td>
                 </tr>
               );
             })}
@@ -227,7 +273,7 @@ export default function PlaylistTable({
           Prev
         </button>
         <span style={{ margin: '0 12px' }}>
-          Page {page} of {totalPages} ({filteredRows.length} videos)
+          Page {page} of {totalPages} ({filteredRows.length} {isFavoritesView ? 'favorites' : 'videos'})
         </span>
         <button type="button" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>
           Next
