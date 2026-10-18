@@ -158,10 +158,10 @@ export default function PlaylistTable({
           }}
         />
         <div>
-          Unwatched: {unwatchedCount}
+          <strong>Unwatched: </strong>{unwatchedCount}
           {maxDuration !== 0 && (
             <>
-              {'. '} Time left:{' '}
+              {'. '} <strong>Time left:</strong> {' '}
               {estimatedRemainingSeconds >= 3600 && (
                 <>{Math.floor(estimatedRemainingSeconds / 3600)}h{' '}</>
               )}
