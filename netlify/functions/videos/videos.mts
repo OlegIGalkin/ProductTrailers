@@ -175,9 +175,9 @@ function getSecondsUntilNextReset(): number {
   const laSecond = getPart('second');
 
   // Reset times in minutes from midnight:
-  // 00:30 => 30
-  // 12:30 => 750
-  const resetMinutes = [30, 750];
+  // 01:30 => 90
+  // 13:30 => 810
+  const resetMinutes = [90, 810];
 
   const currentMinutes = laHour * 60 + laMinute;
   const nextResetMinutes =
