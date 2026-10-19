@@ -42,6 +42,13 @@ function isValidYouTubeId(id) {
   return typeof id === 'string' && /^[a-zA-Z0-9_-]{11}$/.test(id);
 }
 
+const DEFAULT_PLAYER_VIDEO_ID = 'UnZWZXcVLOs';
+
+const resolveVideoId = (video, fallbackId = DEFAULT_PLAYER_VIDEO_ID) => {
+  const candidateId = video ? getYouTubeVideoIdFromUrl(video.VideoURL) : null;
+  return isValidYouTubeId(candidateId) ? candidateId : fallbackId;
+};
+
 const YouTubePlayer = forwardRef(
   (
     {
@@ -164,7 +171,6 @@ const YouTubePlayer = forwardRef(
     };
 
     const playNext = () => {
-
       if (!playerRef.current) return;
 
       stopTimeChecking();
@@ -179,20 +185,30 @@ const YouTubePlayer = forwardRef(
       }
 
       let nextVideo = getVideoToPlayNext(videosRef.current, currentPlayingVideo);
-      let videoId = nextVideo ? getYouTubeVideoIdFromUrl(nextVideo.VideoURL) : null;
+      let videoId = resolveVideoId(nextVideo);
 
-      while (nextVideo && (!videoId || !isValidYouTubeId(videoId))) {
+      while (nextVideo && !isValidYouTubeId(getYouTubeVideoIdFromUrl(nextVideo.VideoURL))) {
         storePlayedVideo(nextVideo.VideoURL, nextVideo.TimeWhenAdded);
         onMarkPlayedRef.current?.(nextVideo);
         nextVideo = getVideoToPlayNext(videosRef.current, nextVideo);
-        videoId = nextVideo ? getYouTubeVideoIdFromUrl(nextVideo.VideoURL) : null;
+        videoId = resolveVideoId(nextVideo);
+      }
+
+      if (!nextVideo && videosRef.current?.length === 0) {
+        setPlayingVideo(null);
+        onPlayingChangeRef.current?.(null);
+        updateNextButtonState(null);
+        if (playerRef.current.stopVideo) {
+          playerRef.current.stopVideo();
+        }
+        return;
       }
 
       setPlayingVideo(nextVideo);
       onPlayingChangeRef.current?.(nextVideo);
       updateNextButtonState(nextVideo);
 
-      if (videoId && playerRef.current.loadVideoById) {
+      if (playerRef.current.loadVideoById) {
         const wrapper = wrapperRef.current;
         const fullscreenElement = document.fullscreenElement;
         const wasPlayerFullscreen = !!(
@@ -216,7 +232,6 @@ const YouTubePlayer = forwardRef(
       } else if (playerRef.current.stopVideo) {
         playerRef.current.stopVideo();
       }
-
     };
 
     // Expose playNext to parent via ref
@@ -225,11 +240,13 @@ const YouTubePlayer = forwardRef(
     const loadFirstUnwatched = () => {
       if (!playerReadyRef.current || !playerRef.current) return;
       const nextVideo = getVideoToPlayNext(videosRef.current, null);
-      const videoId = nextVideo ? getYouTubeVideoIdFromUrl(nextVideo.VideoURL) : null;
-      if (videoId && isValidYouTubeId(videoId)) {
-        setPlayingVideo(nextVideo);
-        onPlayingChangeRef.current?.(nextVideo);
+      const videoId = resolveVideoId(nextVideo);
+      if (nextVideo || videosRef.current?.length === 0) {
+        setPlayingVideo(nextVideo ?? null);
+        onPlayingChangeRef.current?.(nextVideo ?? null);
         updateNextButtonState(nextVideo);
+      }
+      if (videoId && isValidYouTubeId(videoId)) {
         playerRef.current.loadVideoById(videoId);
         setIsPlaying(false);
       } else if (playerRef.current.stopVideo) {
@@ -273,15 +290,22 @@ const YouTubePlayer = forwardRef(
         if (destroyed || !containerRef.current) return;
 
         const nextVideo = getVideoToPlayNext(videosRef.current, null);
-        const videoId = nextVideo ? getYouTubeVideoIdFromUrl(nextVideo.VideoURL) : 'UnZWZXcVLOs';
+        const videoId = resolveVideoId(nextVideo);
 
         let finalVideo = nextVideo;
         let finalId = videoId;
-        while (finalVideo && (!finalId || !isValidYouTubeId(finalId))) {
+        while (finalVideo && !isValidYouTubeId(getYouTubeVideoIdFromUrl(finalVideo.VideoURL))) {
           storePlayedVideo(finalVideo.VideoURL, finalVideo.TimeWhenAdded);
           onMarkPlayedRef.current?.(finalVideo);
           finalVideo = getVideoToPlayNext(videosRef.current, finalVideo);
-          finalId = finalVideo ? getYouTubeVideoIdFromUrl(finalVideo.VideoURL) : null;
+          finalId = resolveVideoId(finalVideo);
+        }
+
+        if (!finalVideo && videosRef.current?.length === 0) {
+          setPlayingVideo(null);
+          onPlayingChangeRef.current?.(null);
+          updateNextButtonState(null);
+          finalId = DEFAULT_PLAYER_VIDEO_ID;
         }
 
         setPlayingVideo(finalVideo);

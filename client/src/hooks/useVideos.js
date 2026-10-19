@@ -14,6 +14,7 @@ export function useVideos(dateFilters, onEmptyResults) {
     let cancelled = false;
     async function load() {
       setLoading(true);
+      setError(null);
       try {
         const { startDate, endDate } = getDateRangeForFilter(dateMode, selectedDateRange);
         const params = new URLSearchParams();
@@ -21,18 +22,28 @@ export function useVideos(dateFilters, onEmptyResults) {
         if (endDate) params.append('endDate', endDate);
 
         const res = await fetch(`/.netlify/functions/videos?${params.toString()}`);
-        if (!res.ok) throw new Error(`Failed to load videos: ${res.status}`);
-        const raw = await res.json();
+        let raw = [];
+
+        if (res.ok) {
+          raw = await res.json().catch(() => []);
+        } else {
+          raw = [];
+        }
+
         if (cancelled) return;
         if (raw.length === 0) onEmptyResults?.(dateMode);
 
-        // processVideos now only does client-side shuffling and category extraction
         const processed = processVideos(raw);
         setSortedVideos(processed.sortedVideos);
         setFilteredVideos(processed.filteredVideos);
         setCategoryName(processed.categoryName);
       } catch (e) {
-        if (!cancelled) setError(e.message);
+        if (!cancelled) {
+          setSortedVideos([]);
+          setFilteredVideos([]);
+          setCategoryName(null);
+          setError(null);
+        }
       } finally {
         if (!cancelled) {
           setLoading(false);
